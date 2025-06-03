@@ -1,6 +1,15 @@
 provider "azurerm" {
   features {}
-  subscription_id = "8d620ffe-f57d-4b15-b5b8-7acff17b1869"
+  tenant_id       = var.tenant_id
+  subscription_id = var.subscription_id
+  client_id       = var.client_id
+  client_secret   = var.client_secret
+}
+
+
+# Restrict prefix to <= 18 chars to leave room for suffix
+locals {
+  safe_prefix = substr(var.storage_account_prefix, 0, 18)
 }
 
 resource "azurerm_resource_group" "rg" {
@@ -8,21 +17,21 @@ resource "azurerm_resource_group" "rg" {
   location = var.location
 }
 
+resource "azurerm_storage_account" "storage" {
+  name                     = lower("${local.safe_prefix}${random_string.suffix.result}")
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = var.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+
+  tags = var.tags
+}
+
 resource "random_string" "suffix" {
   length  = 6
   upper   = false
   numeric = true
   special = false
-}
-
-resource "azurerm_storage_account" "storage" {
-  name                     = lower("${var.storage_account_prefix}${random_string.suffix.result}")
-  resource_group_name      = azurerm_resource_group.rg.name
-  location                 = azurerm_resource_group.rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-
-  tags = var.tags
 }
 
 resource "azurerm_storage_container" "tfstate" {
