@@ -1,7 +1,31 @@
 provider "azurerm" {
   features {}
-  subscription_id = "8d620ffe-f57d-4b15-b5b8-7acff17b1869"
+  tenant_id       = var.tenant_id
+  subscription_id = var.subscription_id
+  client_id       = var.client_id
+  client_secret   = var.client_secret
 }
+
+variable "tenant_id" {
+  description = "The Azure Active Directory tenant ID"
+  type        = string
+}
+
+variable "subscription_id" {
+  description = "The Azure subscription ID"
+  type        = string
+}
+
+variable "client_id" {
+  description = "The Azure client ID"
+  type        = string
+}
+
+variable "client_secret" {
+  description = "The Azure client secret"
+  type        = string
+}
+
 
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
