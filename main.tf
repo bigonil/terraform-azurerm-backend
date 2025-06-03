@@ -6,30 +6,25 @@ provider "azurerm" {
   client_secret   = var.client_secret
 }
 
-variable "tenant_id" {
-  description = "The Azure Active Directory tenant ID"
-  type        = string
-}
 
-variable "subscription_id" {
-  description = "The Azure subscription ID"
-  type        = string
+# Restrict prefix to <= 18 chars to leave room for suffix
+locals {
+  safe_prefix = substr(var.storage_account_prefix, 0, 18)
 }
-
-variable "client_id" {
-  description = "The Azure client ID"
-  type        = string
-}
-
-variable "client_secret" {
-  description = "The Azure client secret"
-  type        = string
-}
-
 
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
+}
+
+resource "azurerm_storage_account" "storage" {
+  name                     = lower("${local.safe_prefix}${random_string.suffix.result}")
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = var.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+
+  tags = var.tags
 }
 
 resource "random_string" "suffix" {
@@ -37,16 +32,6 @@ resource "random_string" "suffix" {
   upper   = false
   numeric = true
   special = false
-}
-
-resource "azurerm_storage_account" "storage" {
-  name                     = lower("${var.storage_account_prefix}${random_string.suffix.result}")
-  resource_group_name      = azurerm_resource_group.rg.name
-  location                 = azurerm_resource_group.rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-
-  tags = var.tags
 }
 
 resource "azurerm_storage_container" "tfstate" {
