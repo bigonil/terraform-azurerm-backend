@@ -1,23 +1,25 @@
 ### 📄 `terraform-backend-azurerm/README.md`
 
-````
+````markdown
 # Terraform Backend Module for AzureRM 💠
 
-This module provisions the required Azure infrastructure to support **remote Terraform state storage** and **state locking** using:
+This module provisions Azure infrastructure to support **remote Terraform state storage** and **locking**, using:
 
-- 🔐 Azure Blob Storage (as backend)
-- 🔒 Native Azure Blob Lease (for locking – no external DB required)
+- 🔐 Azure Blob Storage for storing `.tfstate`
+- 🔒 Native Azure Blob Lease for state locking (no extra DB required)
 
-
+---
 
 ## 📦 Features
 
-- Creates an **Azure Resource Group**
-- Creates a globally unique **Azure Storage Account**
-- Creates a **Blob Storage Container** for state files
-- Automatically enables secure settings (no public access)
-- Supports tagging, region config, and modular reuse
+- Creates a dedicated **Azure Resource Group**
+- Deploys a **globally unique Azure Storage Account**
+- Creates a **private Blob Storage Container** for storing Terraform state
+- Adds a **random suffix** to ensure uniqueness of the storage account
+- Includes **input validation** to prevent misconfigured names
+- Modular, taggable, reusable across environments (`dev`, `stage`, `prod`)
 
+---
 
 ## 🚀 Usage
 
@@ -26,7 +28,7 @@ module "backend" {
   source                 = "./terraform-backend-azurerm"
   location               = "eastus"
   resource_group_name    = "terraform-backend-dev"
-  storage_account_prefix = "tfstate"
+  storage_account_prefix = "tfstateprod"
   container_name         = "tfstate"
 
   tags = {
@@ -36,34 +38,43 @@ module "backend" {
 }
 ````
 
-After applying the module, configure your backend in the root project:
+### 💡 After Applying
+
+Manually configure your backend in the root Terraform project:
 
 ```hcl
 terraform {
   backend "azurerm" {
     resource_group_name  = "terraform-backend-dev"
-    storage_account_name = "tfstatea1b2c3"    # <- output from module
+    storage_account_name = "tfstateprod3a7c5b"  # <- use module output
     container_name       = "tfstate"
     key                  = "envs/dev/terraform.tfstate"
   }
 }
 ```
 
-> 💡 Remember: Backend config must be manually added and initialized using `terraform init`.
+> Run `terraform init` after setting the backend block.
 
-
+---
 
 ## 🔧 Input Variables
 
-| Name                     | Type          | Description                                          | Default      |
-| ------------------------ | ------------- | ---------------------------------------------------- | ------------ |
-| `location`               | `string`      | Azure region                                         | `"eastus"`   |
-| `resource_group_name`    | `string`      | Name of the resource group                           | **required** |
-| `storage_account_prefix` | `string`      | Prefix for storage account (must be globally unique) | **required** |
-| `container_name`         | `string`      | Blob container name                                  | `"tfstate"`  |
-| `tags`                   | `map(string)` | Tags to apply to all resources                       | `{}`         |
+| Name                     | Type          | Description                                                                        | Default     |
+| ------------------------ | ------------- | ---------------------------------------------------------------------------------- | ----------- |
+| `location`               | `string`      | Azure region to deploy resources into                                              | `"eastus"`  |
+| `resource_group_name`    | `string`      | Name of the Azure Resource Group                                                   | *required*  |
+| `storage_account_prefix` | `string`      | Prefix for the storage account — must be ≤18 chars, lowercase letters/numbers only | *required*  |
+| `container_name`         | `string`      | Name of the blob container used for Terraform state                                | `"tfstate"` |
+| `tags`                   | `map(string)` | Tags to apply to resources                                                         | `{}`        |
 
+### 🛡 Validation
 
+This module enforces:
+
+* Max length for `storage_account_prefix` (≤18 characters)
+* Only lowercase letters and numbers for `storage_account_prefix`
+
+---
 
 ## 📤 Outputs
 
@@ -73,35 +84,44 @@ terraform {
 | `storage_account_name` | Final storage account name         |
 | `container_name`       | Name of the blob container         |
 
-
+---
 
 ## ✅ Requirements
 
-* Terraform 1.0+
-* AzureRM Provider 3.x+
-* Azure Subscription with sufficient privileges
+* Terraform v1.0+
+* AzureRM Provider v3.x+
+* Azure CLI or Service Principal for authentication
 
+---
 
+## 🔐 State Locking
 
-## 🔐 Locking
+This module uses [Azure Blob Lease Locking](https://learn.microsoft.com/en-us/azure/storage/blobs/lease-container) — no need for a DynamoDB or external locking system 🎉
 
-This module relies on [Azure Blob Lease locking](https://learn.microsoft.com/en-us/azure/storage/blobs/lease-container) — **no need for a separate lock table or DB** 🎉
+---
 
+## 🧪 Testing Example Prefix
 
+Valid:
+
+```hcl
+storage_account_prefix = "tfstatedev"
+```
+
+Invalid:
+
+```hcl
+storage_account_prefix = "terraform-backend-storage"  # ❌ too long + contains dashes
+```
+
+---
 
 ## 📘 License
 
-Apache 2.0 — feel free to fork, modify, and contribute!
+Apache 2.0 — feel free to fork, improve, and contribute.
 
-
+---
 
 ## ✨ Authors
 
-Module maintained by \[Your Name or Org] with ❤️ from the cloud ☁️
-
-```
-
-
-
-Let me know if you'd like this auto-generated for future releases (e.g., via `terraform-docs` or a GitHub Action) 📘✅
-```
+Maintained by \[Your Name or Organization] with ❤️ from the cloud ☁️
