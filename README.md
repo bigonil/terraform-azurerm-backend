@@ -8,7 +8,7 @@ This module provisions the required Azure infrastructure to support **remote Ter
 - 🔐 Azure Blob Storage (as backend)
 - 🔒 Native Azure Blob Lease (for locking – no external DB required)
 
----
+
 
 ## 📦 Features
 
@@ -18,7 +18,6 @@ This module provisions the required Azure infrastructure to support **remote Ter
 - Automatically enables secure settings (no public access)
 - Supports tagging, region config, and modular reuse
 
----
 
 ## 🚀 Usage
 
@@ -52,7 +51,7 @@ terraform {
 
 > 💡 Remember: Backend config must be manually added and initialized using `terraform init`.
 
----
+
 
 ## 🔧 Input Variables
 
@@ -64,7 +63,7 @@ terraform {
 | `container_name`         | `string`      | Blob container name                                  | `"tfstate"`  |
 | `tags`                   | `map(string)` | Tags to apply to all resources                       | `{}`         |
 
----
+
 
 ## 📤 Outputs
 
@@ -74,7 +73,7 @@ terraform {
 | `storage_account_name` | Final storage account name         |
 | `container_name`       | Name of the blob container         |
 
----
+
 
 ## ✅ Requirements
 
@@ -82,19 +81,19 @@ terraform {
 * AzureRM Provider 3.x+
 * Azure Subscription with sufficient privileges
 
----
+
 
 ## 🔐 Locking
 
 This module relies on [Azure Blob Lease locking](https://learn.microsoft.com/en-us/azure/storage/blobs/lease-container) — **no need for a separate lock table or DB** 🎉
 
----
+
 
 ## 📘 License
 
 Apache 2.0 — feel free to fork, modify, and contribute!
 
----
+
 
 ## ✨ Authors
 
@@ -102,13 +101,7 @@ Module maintained by \[Your Name or Org] with ❤️ from the cloud ☁️
 
 ```
 
----
 
-Let me know if you want:
 
-- A **versioned release example** (`v1.0.0`)
-- A **GitHub Actions workflow** to validate PRs and changes
-- Conversion to a **Terraform Registry**-compatible module (`terraform-azurerm-backend`)
-
-🔨🤖 Ready to ship when you are!
+Let me know if you'd like this auto-generated for future releases (e.g., via `terraform-docs` or a GitHub Action) 📘✅
 ```
